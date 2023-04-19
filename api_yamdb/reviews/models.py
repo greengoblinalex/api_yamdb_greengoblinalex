@@ -1,16 +1,19 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from api.models import Title
 from .validators import score_validator
 
+User = get_user_model()
+
 
 class Review(models.Model):
     title = models.ForeignKey(Title, related_name='reviews',
                               on_delete=models.CASCADE)
-    author = models.ForeignKey('User', related_name='reviews',
+    author = models.ForeignKey(User, related_name='reviews',
                                on_delete=models.CASCADE)
     text = models.TextField()
-    score = models.IntegerField(validators=score_validator)
+    score = models.IntegerField(validators=(score_validator,))
     pub_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -24,7 +27,7 @@ class Review(models.Model):
 class Comment(models.Model):
     review = models.ForeignKey(Review, related_name='comments',
                                on_delete=models.CASCADE)
-    author = models.ForeignKey('User', related_name='comments',
+    author = models.ForeignKey(User, related_name='comments',
                                on_delete=models.CASCADE)
     text = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True)
