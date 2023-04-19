@@ -4,7 +4,7 @@ from reviews.models import Comment, Review
 from .serializers import (CommentSerializer, ReviewSerializer,)
 
 
-class CommentViewSet(viewsets):
+class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
