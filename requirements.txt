@@ -21,3 +21,6 @@ rest-framework-simplejwt==0.0.2
 sqlparse==0.4.3
 toml==0.10.2
 urllib3==1.26.15
+django-filter==23.1
+django-csv==1.2
+

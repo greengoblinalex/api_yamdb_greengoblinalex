@@ -4,16 +4,15 @@ from .validators import validate_alphanumeric
 
 
 class Title(models.Model):
-    """Модель произведений искусства"""
-    name = models.TextField(max_length=256,)
+    name = models.TextField(max_length=256)
     year = models.IntegerField()
-    rating = models.IntegerField()
-    description = models.TextField()
-    genre = models.ForeignKey(
-        'Genre', on_delete=models.CASCADE, related_name='titles',
-    )
     category = models.ForeignKey(
         'Category', on_delete=models.CASCADE, related_name='titles',
+    )
+    description = models.TextField(default=0)
+    rating = models.IntegerField(default=0)
+    genre = models.ForeignKey(
+        'Genre', on_delete=models.CASCADE, related_name='titles',
     )
 
     def __str__(self):
@@ -21,18 +20,38 @@ class Title(models.Model):
 
 
 class Genre(models.Model):
-    """Модель жанров искусства"""
-    name = models.TextField(max_length=256, )
+    name = models.TextField(max_length=256,)
     slug = models.SlugField(
         max_length=50, validators=(validate_alphanumeric,),
         unique=True
     )
+
+    def __str__(self):
+        return self.slug
 
 
 class Category(models.Model):
-    """Модель категорий искусства"""
     name = models.TextField(max_length=256, )
     slug = models.SlugField(
         max_length=50, validators=(validate_alphanumeric,),
         unique=True
     )
+
+    def __str__(self):
+        return self.slug
+
+
+class TitleGenre(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='title_genres'
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        related_name='title_genres'
+    )
+
+    def __str__(self):
+        return f'{self.title} - {self.genre}'
