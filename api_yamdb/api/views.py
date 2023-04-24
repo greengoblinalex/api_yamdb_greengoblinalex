@@ -14,9 +14,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genre', 'year', 'category', 'name')
 
-    # def perform_create(self, serializer):
-    #     serializer.save(author=self.request.user)
-
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
