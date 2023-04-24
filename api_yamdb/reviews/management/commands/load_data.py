@@ -23,30 +23,7 @@ def import_csv(file, model):
         reader = csv.DictReader(csvfile)
         print(file)
         for row in reader:
-            obj = model()
-            # for field in model._meta.fields:
-            #     if field.name in row:
-            #         setattr(obj, field.name, row[field.name])
-            print(row)
-
-            # obj.save()
-
-
-# def import_related_csv(file, model):
-#     with open(file, encoding='utf-8') as csvfile:
-#         reader = csv.DictReader(csvfile)
-#         print(file)
-#         for row in reader:
-#             obj = model()
-#             for field in model._meta.fields:
-#                 if field.name in row:
-#                     setattr(obj, field.name, row[field.name])
-#             print(row)
-#             obj.save()
-
-
-def exist_models(model):
-    ...
+            model.objects.create(**row)
 
 
 class Command(BaseCommand):
@@ -58,6 +35,7 @@ class Command(BaseCommand):
             Genre.objects.exists() or
             Category.objects.exists() or
             TitleGenre.objects.exists()
+            # добавить новые модели как появятся
         ):
             print('data already loaded...exiting.')
             print(ALREDY_LOADED_ERROR_MESSAGE)
@@ -65,5 +43,6 @@ class Command(BaseCommand):
         print("Loading data")
         for file, model in zip(FILES, MODELS):
             import_csv(f'static/data/{file}', model)
+
 
 

@@ -11,9 +11,6 @@ class Title(models.Model):
     )
     description = models.TextField(default=0)
     rating = models.IntegerField(default=0)
-    genre = models.ForeignKey(
-        'Genre', on_delete=models.CASCADE, related_name='titles',
-    )
 
     def __str__(self):
         return self.name
