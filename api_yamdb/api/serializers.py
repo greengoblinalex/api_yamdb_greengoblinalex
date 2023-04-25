@@ -31,6 +31,9 @@ class TitleSerializer(serializers.ModelSerializer):
             'slug': obj.category.slug,
         }
 
+    def create(self, validated_data):
+        print(validated_data)
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

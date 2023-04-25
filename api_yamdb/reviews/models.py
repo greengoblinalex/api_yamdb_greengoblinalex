@@ -21,15 +21,18 @@ class Title(models.Model):
     category = models.ForeignKey(
         'Category', on_delete=models.CASCADE, related_name='titles',
     )
-    description = models.TextField(default=0)
+    description = models.TextField(default='', null=True, blank=True)
     rating = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
 
+    def save(self, validated_data):
+        print(validated_data)
+
 
 class Category(models.Model):
-    name = models.TextField(max_length=256, )
+    name = models.TextField(max_length=256,)
     slug = models.SlugField(
         max_length=50, validators=(validate_alphanumeric,),
         unique=True
