@@ -12,7 +12,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
-    genre = GenreSerializer(read_only=True, many=True)
+    # genre = GenreSerializer(many=True)
+    genre = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -24,6 +25,9 @@ class TitleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Год выпуска не может быть "
                                               "больше текущего года")
         return value
+
+    def get_genre(self, obj):
+        return GenreSerializer(obj.genre, many=True).data
 
     def get_category(self, obj):
         return {
