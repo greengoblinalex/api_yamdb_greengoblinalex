@@ -12,12 +12,11 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
-    # genre = GenreSerializer(many=True)
     genre = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'rating', 'genre', 'description', 'category')
 
     def validate_year(self, value):
         current_year = date.today().year
@@ -37,6 +36,15 @@ class TitleSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data)
+        genres = validated_data.pop('genre')
+        category = validated_data.pop('category')
+        category = Category.objects.get(slug=category)
+
+        title = Title.objects.create(**validated_data, category=category)
+        for genre in genres:
+            genre = Genre.objects.get(slug=genre)
+            TitleGenre.objects.create(title=title, genre=genre)
+        return title
 
 
 class CategorySerializer(serializers.ModelSerializer):

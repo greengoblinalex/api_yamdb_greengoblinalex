@@ -27,9 +27,6 @@ class Title(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, validated_data):
-        print(validated_data)
-
 
 class Category(models.Model):
     name = models.TextField(max_length=256,)
