@@ -4,7 +4,7 @@ from .validators import validate_alphanumeric
 
 
 class Genre(models.Model):
-    name = models.TextField(max_length=256,)
+    name = models.TextField(max_length=256, )
     slug = models.SlugField(
         max_length=50, validators=(validate_alphanumeric,),
         unique=True
@@ -29,7 +29,7 @@ class Title(models.Model):
 
 
 class Category(models.Model):
-    name = models.TextField(max_length=256,)
+    name = models.TextField(max_length=256, )
     slug = models.SlugField(
         max_length=50, validators=(validate_alphanumeric,),
         unique=True
