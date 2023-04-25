@@ -22,12 +22,9 @@ class SignupView(APIView):
             email=serializer.validated_data.get('email'),
             username=serializer.validated_data.get('username')
         )
-        if not created:
-            user.confirmation_code = default_token_generator.make_token(user)
-            user.save(update_fields=['confirmation_code'])
-        else:
-            user.confirmation_code = default_token_generator.make_token(user)
-            user.save()
+
+        user.confirmation_code = default_token_generator.make_token(user)
+        user.save(update_fields=['confirmation_code'])
 
         send_mail(
             'Confirmation code',

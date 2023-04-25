@@ -12,8 +12,8 @@ class SignupSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
 
     class Meta:
-        fields = ('email', 'username')
         model = User
+        fields = ('email', 'username')
 
     def validate(self, data):
         user = User.objects.filter(email=data.get('email')).first()
@@ -44,12 +44,12 @@ class SignupSerializer(serializers.Serializer):
 
     def validate_first_name(self, data):
         if len(data) > 150:
-            raise serializers.ValidationError('Too first name')
+            raise serializers.ValidationError('Too long first name')
         return data
 
     def validate_last_name(self, data):
         if len(data) > 150:
-            raise serializers.ValidationError('Too last name')
+            raise serializers.ValidationError('Too long last name')
         return data
 
 
@@ -59,8 +59,8 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=False)
 
     class Meta:
-        fields = ('username', 'confirmation_code', 'email')
         model = User
+        fields = ('username', 'confirmation_code', 'email')
 
     def validate(self, data):
         username = data.get('username')
