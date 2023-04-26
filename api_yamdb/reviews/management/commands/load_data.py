@@ -39,4 +39,3 @@ class Command(BaseCommand):
         print("Loading data")
         for file, model in zip(FILES, MODELS):
             import_csv(f'static/data/{file}', model)
-
