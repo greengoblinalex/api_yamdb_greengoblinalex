@@ -1,6 +1,6 @@
-from rest_framework import serializers
 from datetime import date
 
+from rest_framework import serializers
 from reviews.models import Title, Genre, Category, TitleGenre
 
 
@@ -10,13 +10,19 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
-    genre = serializers.SerializerMethodField()
+    genres = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'genre',
+        fields = ('id', 'name', 'year', 'rating', 'genres',
                   'description', 'category')
 
     def validate_year(self, value):
@@ -27,17 +33,13 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     def get_genre(self, obj):
-        return GenreSerializer(obj.genre, many=True).data
+        return GenreSerializer(obj.genres, many=True).data
 
     def get_category(self, obj):
-        return {
-            'name': obj.category.name,
-            'slug': obj.category.slug,
-        }
+        return CategorySerializer(obj.category).data
 
     def create(self, validated_data):
-        print(validated_data)
-        genres = validated_data.pop('genre')
+        genres = validated_data.pop('genres')
         category = validated_data.pop('category')
         category = Category.objects.get(slug=category)
 
@@ -46,15 +48,3 @@ class TitleSerializer(serializers.ModelSerializer):
             genre = Genre.objects.get(slug=genre)
             TitleGenre.objects.create(title=title, genre=genre)
         return title
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
-
-
-class TitleGenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TitleGenre
-        fields = ('id')
