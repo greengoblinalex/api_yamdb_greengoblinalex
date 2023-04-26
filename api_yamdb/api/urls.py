@@ -6,7 +6,11 @@ from users.views import UserViewset
 
 router_v1 = DefaultRouter()
 router_v1.register(r'users', UserViewset, basename='users')
-
+router_v1.register(r'titles/(?P<title_id>\d+)/reviews', ReviewViewSet,
+                'reviews')
+router_v1.register((r'titles/(?P<title_id>\d+)/reviews/'
+                r'(?P<review_id>\d+)/comments'),
+                CommentViewSet, 'comments')
 
 urlpatterns = [
     path('v1/auth/signup/', SignupView.as_view(), name='signup'),
