@@ -3,11 +3,11 @@ from rest_framework import routers
 
 from .views import TitleViewSet, GenreViewSet, CategoryViewSet
 
-router = routers.DefaultRouter()
-router.register(r'titles', TitleViewSet)
-router.register(r'genres', GenreViewSet, basename='genres')
-router.register(r'categories', CategoryViewSet, basename='categories')
+router_v1 = routers.DefaultRouter()
+router_v1.register(r'titles', TitleViewSet, basename='titles')
+router_v1.register(r'genres', GenreViewSet, basename='genres')
+router_v1.register(r'categories', CategoryViewSet, basename='categories')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', include(router_v1.urls)),
 ]

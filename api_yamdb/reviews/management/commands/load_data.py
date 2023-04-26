@@ -11,11 +11,11 @@ database with tables"""
 FILES = [
     'category.csv', 'genre.csv', 'titles.csv', 'genre_title.csv',
 
-    # 'comments.csv', 'review.csv', 'users.csv'
-    # раскомментировать как появятся другие модели
+    # TODO 'comments.csv', 'review.csv', 'users.csv'
+    # TODO раскомментировать как появятся другие модели
 ]
 MODELS = [Category, Genre, Title, TitleGenre, ]
-# добавить новые модели как появятся
+# TODO добавить новые модели как появятся
 
 
 def import_csv(file, model):
