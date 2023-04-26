@@ -1,6 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
-from .validators import validate_alphanumeric
+from .validators import validate_alphanumeric, score_validator
+
+User = get_user_model()
 
 
 class Genre(models.Model):
@@ -53,3 +56,29 @@ class TitleGenre(models.Model):
 
     def __str__(self):
         return f'{self.title} - {self.genre}'
+
+
+class Review(models.Model):
+    title = models.ForeignKey(Title, related_name='reviews',
+                              on_delete=models.CASCADE)
+    author = models.ForeignKey(User, related_name='reviews',
+                               on_delete=models.CASCADE)
+    text = models.TextField()
+    score = models.IntegerField(validators=(score_validator,))
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'], name='unique_title_author'
+            )
+        ]
+
+
+class Comment(models.Model):
+    review = models.ForeignKey(Review, related_name='comments',
+                               on_delete=models.CASCADE)
+    author = models.ForeignKey(User, related_name='comments',
+                               on_delete=models.CASCADE)
+    text = models.TextField()
+    pub_date = models.DateTimeField(auto_now_add=True)
