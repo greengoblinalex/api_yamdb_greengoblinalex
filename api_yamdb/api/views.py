@@ -14,12 +14,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = []  # TODO добавить права доступа
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre__slug', 'year', 'category__slug', 'name')
+    filterset_fields = ('genres__slug', 'year', 'category__slug', 'name')
 
     def perform_create(self, serializer):
-        genre = self.request.data.get('genre')
+        genres = dict(self.request.data).get('genre')
         category = self.request.data.get('category')
-        serializer.save(genre=genre, category=category)
+        serializer.save(genres=genres, category=category)
 
 
 class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
@@ -44,7 +44,7 @@ class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    # permission_classes = (AuthorOrReadOnly,)
+    # permission_classes = TODO добавить права доступа
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
@@ -63,7 +63,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    # permission_classes = (AuthorOrReadOnly,)
+    # permission_classes = TODO добавить права доступа
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
