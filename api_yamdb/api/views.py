@@ -15,12 +15,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [ReadOnly | IsAuthor | IsAdmin | IsModerator]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre__slug', 'year', 'category__slug', 'name')
+    filterset_fields = ('genres__slug', 'year', 'category__slug', 'name')
 
     def perform_create(self, serializer):
-        genre = self.request.data.get('genre')
+        genres = self.request.data.getlist('genre')
         category = self.request.data.get('category')
-        serializer.save(genre=genre, category=category)
+        serializer.save(genres=genres, category=category)
 
 
 class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
