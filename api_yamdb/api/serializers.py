@@ -23,11 +23,20 @@ class CategorySerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     genres = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField('title_rating')
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'rating', 'genres',
                   'description', 'category')
+
+    def title_rating(self, obj):
+        all_scores = obj.reviews.values_list('score', flat=True)
+
+        if not all_scores:
+            return None
+
+        return int(sum(all_scores) / len(all_scores))
 
     def validate_year(self, value):
         current_year = date.today().year
@@ -36,7 +45,7 @@ class TitleSerializer(serializers.ModelSerializer):
                                               "больше текущего года")
         return value
 
-    def get_genre(self, obj):
+    def get_genres(self, obj):
         return GenreSerializer(obj.genres, many=True).data
 
     def get_category(self, obj):
