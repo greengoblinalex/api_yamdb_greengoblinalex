@@ -3,8 +3,10 @@ from rest_framework import permissions
 
 class ReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated
-                    and request.method in permissions.SAFE_METHODS)
+        return bool(request.method in permissions.SAFE_METHODS)
+
+    def has_object_permission(self, request, view, obj):
+        return bool(request.method in permissions.SAFE_METHODS)
 
 
 class IsAuthor(permissions.BasePermission):
@@ -20,9 +22,17 @@ class IsAdmin(permissions.BasePermission):
         return bool(request.user.is_authenticated
                     and request.user.role == 'admin')
 
+    def has_object_permission(self, request, view, obj):
+        return bool(request.user.is_authenticated
+                    and request.user.role == 'admin')
+
 
 class IsModerator(permissions.BasePermission):
     def has_permission(self, request, view):
+        return bool(request.user.is_authenticated
+                    and request.user.role == 'moderator')
+
+    def has_object_permission(self, request, view, obj):
         return bool(request.user.is_authenticated
                     and request.user.role == 'moderator')
 
