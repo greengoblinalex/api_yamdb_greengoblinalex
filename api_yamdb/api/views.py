@@ -1,13 +1,13 @@
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import PageNumberPagination
 
-from reviews.models import Title, Genre, Category, Comment, Review
-from .serializers import (TitleSerializer, GenreSerializer, CategorySerializer,
-                          CommentSerializer, ReviewSerializer,)
-from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
 from reviews.filters import TitleFilter
+from reviews.models import Title, Genre, Category, Comment, Review
+from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
+from .serializers import (TitleSerializer, GenreSerializer, CategorySerializer,
+                          CommentSerializer, ReviewSerializer, )
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -56,8 +56,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs['title_id']
         review_id = self.kwargs['review_id']
-        return Comment.objects.filter(review__id=review_id,
-                                      review__title__id=title_id).order_by('id')
+        return Comment.objects.filter(
+            review__id=review_id, review__title__id=title_id
+        ).order_by('id')
 
     def perform_create(self, serializer):
         title_id = self.kwargs['title_id']
