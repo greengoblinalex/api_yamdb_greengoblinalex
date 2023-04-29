@@ -7,29 +7,35 @@ from reviews.models import Title, Genre, Category, Comment, Review
 from .serializers import (TitleSerializer, GenreSerializer, CategorySerializer,
                           CommentSerializer, ReviewSerializer,)
 from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
+from reviews.filters import TitleFilter
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('id')
     serializer_class = TitleSerializer
-    permission_classes = [ReadOnly | IsAdmin | IsModerator]
+    permission_classes = [ReadOnly | IsAdmin]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genres__slug', 'year', 'category__slug', 'name')
+    filterset_class = TitleFilter
 
     def perform_create(self, serializer):
-        genres = self.request.data.getlist('genres')
+        genres = self.request.data.getlist('genre')
+        category = self.request.data.get('category')
+        serializer.save(genre=genres, category=category)
+
+    def perform_update(self, serializer):
+        genres = self.request.data.getlist('genre')
         category = self.request.data.get('category')
         serializer.save(genre=genres, category=category)
 
 
 class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
     permission_classes = [ReadOnly | IsAdmin]
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('slug',)
+    search_fields = ('slug', 'name')
     lookup_field = 'slug'
 
 
@@ -39,7 +45,7 @@ class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
     serializer_class = CategorySerializer
     permission_classes = [ReadOnly | IsAdmin]
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('slug',)
+    search_fields = ('slug', 'name')
     lookup_field = 'slug'
 
 
@@ -51,7 +57,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         title_id = self.kwargs['title_id']
         review_id = self.kwargs['review_id']
         return Comment.objects.filter(review__id=review_id,
-                                      review__title__id=title_id)
+                                      review__title__id=title_id).order_by('id')
 
     def perform_create(self, serializer):
         title_id = self.kwargs['title_id']
@@ -68,7 +74,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
-        return Review.objects.filter(title__id=title_id)
+        return Review.objects.filter(title__id=title_id).order_by('id')
 
     def perform_create(self, serializer):
         title_id = self.kwargs['title_id']

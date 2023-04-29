@@ -1,17 +1,17 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, filters
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import status, filters
-from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from django.contrib.auth.tokens import default_token_generator
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import User, UserSerializer, SignupSerializer, TokenSerializer
-from .permissions import IsAdminOrYourself
 from api.permissions import IsSuperuser, IsYourself, IsAdmin
+from .serializers import (User, UserSerializer,
+                          SignupSerializer, TokenSerializer)
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -88,8 +88,9 @@ class TokenObtainPairView(APIView):
         confirmation_code = serializer.validated_data.get('confirmation_code')
 
         if not default_token_generator.check_token(user, confirmation_code):
-            return Response({'confirmation_code': 'Неправильный код подтверждения'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'confirmation_code': 'Неправильный код подтверждения'},
+                status=status.HTTP_400_BAD_REQUEST)
 
         refresh = RefreshToken.for_user(user)
         return Response({
