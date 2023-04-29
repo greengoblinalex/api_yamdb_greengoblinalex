@@ -9,17 +9,17 @@ from .serializers import (TitleSerializer, GenreSerializer, CategorySerializer,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().order_by('id')
     serializer_class = TitleSerializer
     permission_classes = []  # TODO добавить права доступа
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre__slug', 'year', 'category__slug', 'name')
+    filterset_fields = ('genres__slug', 'year', 'category__slug', 'name')
 
     def perform_create(self, serializer):
-        genre = self.request.data.get('genre')
+        genres = self.request.data.getlist('genres')
         category = self.request.data.get('category')
-        serializer.save(genre=genre, category=category)
+        serializer.save(genre=genres, category=category)
 
 
 class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
@@ -34,11 +34,12 @@ class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                       mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
     permission_classes = []  # TODO добавить права доступа
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('slug',)
+    search_fields = ('=slug',)
     lookup_field = 'slug'
 
 

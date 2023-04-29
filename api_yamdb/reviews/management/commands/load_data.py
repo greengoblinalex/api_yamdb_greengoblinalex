@@ -1,7 +1,8 @@
 import csv
 
 from django.core.management import BaseCommand
-from reviews.models import Title, Genre, Category, TitleGenre
+from reviews.models import (Title, Genre, Category, TitleGenre, User,
+                            Review, Comment)
 
 ALREDY_LOADED_ERROR_MESSAGE = """
 If you need to reload the child data from the CSV file,
@@ -9,13 +10,10 @@ first delete the db.sqlite3 file to destroy the database.
 Then, run `python manage.py migrate` for a new empty
 database with tables"""
 FILES = [
-    'category.csv', 'genre.csv', 'titles.csv', 'genre_title.csv',
-
-    # TODO 'comments.csv', 'review.csv', 'users.csv'
-    # TODO раскомментировать как появятся другие модели
+    'users.csv', 'category.csv', 'genre.csv', 'titles.csv', 'genre_title.csv',
+    'comments.csv', 'review.csv',
 ]
-MODELS = [Category, Genre, Title, TitleGenre, ]
-# TODO добавить новые модели как появятся
+MODELS = [User, Category, Genre, Title, TitleGenre, Review, Comment]
 
 
 def import_csv(file, model):
