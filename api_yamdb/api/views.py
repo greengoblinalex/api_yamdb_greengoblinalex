@@ -12,7 +12,7 @@ from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = [ReadOnly | IsAuthor | IsAdmin | IsModerator]
+    permission_classes = [ReadOnly | IsAdmin | IsModerator]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genres__slug', 'year', 'category__slug', 'name')
