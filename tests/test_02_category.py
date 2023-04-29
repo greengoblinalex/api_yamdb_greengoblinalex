@@ -21,6 +21,7 @@ class Test02CategoryAPI:
         )
 
     def test_02_category_with_admin_user(self, admin_client):
+
         categories_count = 0
 
         url = '/api/v1/categories/'
