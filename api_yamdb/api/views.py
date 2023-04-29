@@ -6,12 +6,13 @@ from rest_framework.pagination import PageNumberPagination
 from reviews.models import Title, Genre, Category, Comment, Review
 from .serializers import (TitleSerializer, GenreSerializer, CategorySerializer,
                           CommentSerializer, ReviewSerializer,)
+from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('id')
     serializer_class = TitleSerializer
-    permission_classes = []  # TODO добавить права доступа
+    permission_classes = [ReadOnly | IsAdmin | IsModerator]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genres__slug', 'year', 'category__slug', 'name')
@@ -26,7 +27,7 @@ class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = []  # TODO добавить права доступа
+    permission_classes = [ReadOnly | IsAdmin]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('slug',)
     lookup_field = 'slug'
@@ -36,16 +37,15 @@ class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                       mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
-    pagination_class = PageNumberPagination
-    permission_classes = []  # TODO добавить права доступа
+    permission_classes = [ReadOnly | IsAdmin]
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('=slug',)
+    search_fields = ('slug',)
     lookup_field = 'slug'
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    # permission_classes = (AuthorOrReadOnly,)
+    permission_classes = [ReadOnly | IsAuthor | IsAdmin | IsModerator]
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
@@ -64,7 +64,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    # permission_classes = (AuthorOrReadOnly,)
+    permission_classes = [ReadOnly | IsAuthor | IsAdmin | IsModerator]
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
