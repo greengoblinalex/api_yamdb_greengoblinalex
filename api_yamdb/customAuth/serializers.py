@@ -11,10 +11,6 @@ class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     username = serializers.CharField(required=True)
 
-    class Meta:
-        model = User
-        fields = ('email', 'username')
-
     def validate(self, data):
         user = User.objects.filter(email=data.get('email')).first()
         if user and user.username != data.get('username'):
@@ -54,13 +50,7 @@ class SignupSerializer(serializers.Serializer):
 
 
 class TokenSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=False)
     username = serializers.CharField(required=True)
-    confirmation_code = serializers.CharField(required=False)
-
-    class Meta:
-        model = User
-        fields = ('username', 'confirmation_code', 'email')
 
     def validate(self, data):
         username = data.get('username')

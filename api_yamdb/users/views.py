@@ -11,12 +11,13 @@ from rest_framework.permissions import AllowAny
 
 from .serializers import User, UserSerializer, SignupSerializer, TokenSerializer
 from .permissions import IsAdminOrYourself
+from api.permissions import IsSuperuser, IsYourself, IsAdmin
 
 
 class UserViewset(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminOrYourself,)
+    permission_classes = [IsSuperuser | IsYourself | IsAdmin]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,
                        filters.OrderingFilter)
