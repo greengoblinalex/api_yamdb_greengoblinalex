@@ -24,20 +24,11 @@ class CategorySerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     genre = serializers.SerializerMethodField()
-    rating = serializers.SerializerMethodField('title_rating')
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'genre',
+        fields = ('id', 'name', 'year', 'genre',
                   'description', 'category')
-
-    def title_rating(self, obj):
-        all_scores = obj.reviews.values_list('score', flat=True)
-
-        if not all_scores:
-            return None
-
-        return int(sum(all_scores) / len(all_scores))
 
     def validate_year(self, value):
         current_year = date.today().year

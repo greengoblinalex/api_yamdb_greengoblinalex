@@ -1,10 +1,12 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from reviews.filters import TitleFilter
-from reviews.models import Title, Genre, Category, Comment, Review
+from reviews.models import Title, Genre, Category, Review
 from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
 from .serializers import (TitleSerializer, GenreSerializer, CategorySerializer,
                           CommentSerializer, ReviewSerializer, )
@@ -17,6 +19,47 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+
+    def list(self, request, *args, **kwargs):
+        titles = self.filter_queryset(self.get_queryset())
+
+        titles_page = self.paginate_queryset(titles)
+        serializer = self.get_serializer(titles_page, many=True)
+        titles_serializer_data = serializer.data
+
+        average_ratings = (
+            Review.objects
+            .filter(title__in=titles_page)
+            .values('title')
+            .annotate(rating=Avg('score'))
+            .order_by('title')
+        )
+
+        for title, average_rating in zip(
+                titles_serializer_data, average_ratings
+        ):
+            title['rating'] = (
+                    average_rating['rating'] and int(average_rating['rating'])
+            )
+
+        return self.get_paginated_response(titles_serializer_data)
+
+    def retrieve(self, request, *args, **kwargs):
+        title = self.get_object()
+        serializer = self.get_serializer(title)
+        title_serializer_data = serializer.data
+
+        average_rating = (
+            Review.objects
+            .filter(title=title)
+            .aggregate(rating=Avg('score'))
+        )
+
+        title_serializer_data['rating'] = (
+                average_rating['rating'] and int(average_rating['rating'])
+        )
+
+        return Response(title_serializer_data)
 
     def perform_create(self, serializer):
         genres = self.request.data.getlist('genre')
