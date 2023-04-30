@@ -56,9 +56,13 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs['title_id']
         review_id = self.kwargs['review_id']
-        return Comment.objects.filter(
-            review__id=review_id, review__title__id=title_id
-        ).order_by('id')
+
+        title = get_object_or_404(
+            Title.objects.prefetch_related('reviews', 'reviews__comments'),
+            id=title_id
+        )
+
+        return title.reviews.get(id=review_id).comments.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs['title_id']

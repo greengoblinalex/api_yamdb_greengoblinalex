@@ -91,13 +91,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'author', 'pub_date', 'score', 'text', 'title')
 
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'title')
-            )
-        ]
-
     def validate_score(self, value):
         if value < 0 or value > 10:
             raise serializers.ValidationError(
@@ -109,7 +102,9 @@ class ReviewSerializer(serializers.ModelSerializer):
                 and Review.objects.filter(
                     author=self.context['author'], title=self.context['title']
                 ).exists()):
-            raise ValidationError('Вы уже оставляли отзыв на это произведение')
+            raise ValidationError(
+                'You have already left a review for this title'
+            )
         return data
 
 
