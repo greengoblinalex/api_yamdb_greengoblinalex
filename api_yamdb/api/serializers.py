@@ -2,8 +2,9 @@ from datetime import date
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.relations import SlugRelatedField
 from rest_framework.fields import DateTimeField
+from rest_framework.relations import SlugRelatedField
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Comment, Review, Title, Genre, Category, TitleGenre
 
@@ -90,19 +91,26 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'author', 'pub_date', 'score', 'text', 'title')
 
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=('author', 'title')
+            )
+        ]
+
     def validate_score(self, value):
         if value < 0 or value > 10:
             raise serializers.ValidationError(
                 'Score must be between 0 and 10')
         return value
 
-    def save(self, **kwargs):
-        if self.context['request'].method == 'POST' and \
-                Review.objects.filter(author=kwargs['author'],
-                                      title=kwargs['title']).exists():
-            raise ValidationError(
-                'Вы уже оставляли отзыв на это произведение')
-        super().save(**kwargs)
+    def validate(self, data):
+        if (self.context['request'].method == 'POST'
+                and Review.objects.filter(
+                    author=self.context['author'], title=self.context['title']
+                ).exists()):
+            raise ValidationError('Вы уже оставляли отзыв на это произведение')
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
