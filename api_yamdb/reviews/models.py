@@ -25,7 +25,6 @@ class Title(models.Model):
         'Category', on_delete=models.CASCADE, related_name='titles',
     )
     description = models.TextField(default='', null=True, blank=True)
-    rating = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name

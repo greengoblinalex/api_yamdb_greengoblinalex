@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -23,11 +25,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         titles = self.filter_queryset(self.get_queryset())
 
-        titles_page = self.paginate_queryset(titles)
+        titles_page: list[Title] = self.paginate_queryset(titles)
         serializer = self.get_serializer(titles_page, many=True)
-        titles_serializer_data = serializer.data
+        titles_serializer_data: dict = serializer.data
 
-        average_ratings = (
+        average_ratings: dict = (
             Review.objects
             .filter(title__in=titles_page)
             .values('title')
@@ -38,7 +40,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         for title, average_rating in zip(
                 titles_serializer_data, average_ratings
         ):
-            title['rating'] = (
+            title['rating']: Optional[int] = (
                     average_rating['rating'] and int(average_rating['rating'])
             )
 
@@ -47,15 +49,15 @@ class TitleViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         title = self.get_object()
         serializer = self.get_serializer(title)
-        title_serializer_data = serializer.data
+        title_serializer_data: dict = serializer.data
 
-        average_rating = (
-            Review.objects
-            .filter(title=title)
-            .aggregate(rating=Avg('score'))
+        average_rating: dict[str: float] = (
+            Title.objects
+            .annotate(rating=Avg('reviews__score'))
+            .values('rating')
+            .get(id=title.id)
         )
-
-        title_serializer_data['rating'] = (
+        title_serializer_data['rating']: Optional[int] = (
                 average_rating['rating'] and int(average_rating['rating'])
         )
 
