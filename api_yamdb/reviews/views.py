@@ -51,8 +51,10 @@ class TokenObtainPairView(APIView):
         confirmation_code = serializer.validated_data.get('confirmation_code')
 
         if not default_token_generator.check_token(user, confirmation_code):
-            return Response({'confirmation_code': 'Неправильный код подтверждения'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'confirmation_code': 'Неправильный код подтверждения'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         refresh = RefreshToken.for_user(user)
         return Response({

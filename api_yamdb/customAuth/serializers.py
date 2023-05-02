@@ -1,10 +1,10 @@
 import re
 
-from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 
-from .models import User
 from users.constants import USERNAME_PATTERN
+from .models import User
 
 
 class SignupSerializer(serializers.Serializer):
@@ -18,14 +18,16 @@ class SignupSerializer(serializers.Serializer):
                 'Another user with this email already exists')
 
         user = User.objects.filter(username=data.get('username')).first()
-        if user and user.username == data.get('username') and user.email != data.get('email'):
+        if (user and user.username == data.get('username')
+                and user.email != data.get('email')):
             raise serializers.ValidationError('Wrong email already exists')
         return data
 
     def validate_username(self, data):
         if not re.match(USERNAME_PATTERN, data):
             raise serializers.ValidationError(
-                'Username should contain only letters, digits, and @/./+/-/_ characters.')
+                'Username should contain only letters,'
+                ' digits, and @/./+/-/_ characters.')
         elif data == 'me':
             raise serializers.ValidationError(
                 'Invalid username: "me" is a reserved keyword')
