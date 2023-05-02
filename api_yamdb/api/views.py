@@ -4,33 +4,32 @@ from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import PageNumberPagination
 
 from reviews.models import Title, Genre, Category, Comment, Review
-from .serializers import (TitleSerializer, GenreSerializer, CategorySerializer,
+from .serializers import (TitleReadSerializer, TitleWriteSerializer,
+                          GenreSerializer,  CategorySerializer,
                           CommentSerializer, ReviewSerializer,)
 from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
 from reviews.filters import TitleFilter
 
 
+class CreateListDestroyMixin(mixins.CreateModelMixin, mixins.ListModelMixin,
+                             mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    pass
+
+
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('id')
-    serializer_class = TitleSerializer
     permission_classes = [ReadOnly | IsAdmin]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
-    def perform_create(self, serializer):
-        genres = self.request.data.getlist('genre')
-        category = self.request.data.get('category')
-        serializer.save(genre=genres, category=category)
-
-    def perform_update(self, serializer):
-        genres = self.request.data.getlist('genre')
-        category = self.request.data.get('category')
-        serializer.save(genre=genres, category=category)
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
-class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class GenreViewSet(CreateListDestroyMixin):
     queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
     permission_classes = [ReadOnly | IsAdmin]
@@ -39,8 +38,7 @@ class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
     lookup_field = 'slug'
 
 
-class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class CategoryViewSet(CreateListDestroyMixin):
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
     permission_classes = [ReadOnly | IsAdmin]
