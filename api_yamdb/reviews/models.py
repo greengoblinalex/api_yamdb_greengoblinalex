@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from .validators import validate_alphanumeric, score_validator
+from .validators import validate_alphanumeric, score_validator, validate_year
 
 User = get_user_model()
 
@@ -24,7 +24,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.TextField(max_length=256, verbose_name='name')
-    year = models.IntegerField(verbose_name='year')
+    year = models.IntegerField(verbose_name='year', validators=[validate_year])
     genre = models.ManyToManyField(Genre, verbose_name='genre')
     category = models.ForeignKey('Category', on_delete=models.CASCADE,
                                  related_name='titles',
@@ -35,6 +35,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'произведение'
         verbose_name_plural = 'произведения'
+        ordering = ['id']
 
     def __str__(self):
         return self.name

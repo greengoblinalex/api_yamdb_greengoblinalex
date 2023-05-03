@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 
 class DoubledPermission(permissions.BasePermission):
-    """has_object_permission дублирует логику has_permission"""
+    """has_object_permission дублирует логику has_permission."""
 
     def has_permission(self, request, view):
         raise NotImplementedError()

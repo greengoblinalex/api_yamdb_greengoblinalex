@@ -1,5 +1,3 @@
-from django.utils import timezone
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
@@ -50,25 +48,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('id', 'name', 'year', 'genre', 'description', 'category')
 
-    def validate_year(self, value):
-        current_year = timezone.now().year
-        if value > current_year:
-            raise serializers.ValidationError(
-                "Год выпуска не может быть больше текущего года"
-            )
-        return value
-
-    def update(self, instance, validated_data):
-        category = validated_data.pop('category', None)
-        if category:
-            category_obj = Category.objects.get(slug=category)
-            instance.category = category_obj
-
-        for key, value in validated_data.items():
-            setattr(instance, key, value)
-        instance.save()
-
-        return instance
+    # def validate_year(self, value):
+    #     current_year = timezone.now().year
+    #     if value > current_year:
+    #         raise serializers.ValidationError(
+    #             "Год выпуска не может быть больше текущего года"
+    #         )
+    #     return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):

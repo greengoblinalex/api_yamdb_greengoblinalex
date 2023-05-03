@@ -14,7 +14,7 @@ from reviews.filters import TitleFilter
 class CreateListDestroyMixin(mixins.CreateModelMixin, mixins.ListModelMixin,
                              mixins.DestroyModelMixin,
                              viewsets.GenericViewSet):
-    """Миксин на создание, удаление и получение списка объектов"""
+    """Миксин на создание, удаление и получение списка объектов."""
 
     pass
 
