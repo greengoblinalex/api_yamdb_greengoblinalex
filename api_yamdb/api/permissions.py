@@ -1,53 +1,44 @@
 from rest_framework import permissions
+from django.urls import reverse
 
 
-class DoubledPermission(permissions.BasePermission):
-    """has_object_permission дублирует логику has_permission"""
-
+class ReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        raise NotImplementedError()
-
-    def has_object_permission(self, request, view, obj):
-        return self.has_permission(request, view)
+        return request.method in permissions.SAFE_METHODS
 
 
-class ReadOnly(DoubledPermission):
+class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.method in permissions.SAFE_METHODS)
+        return (request.user.is_authenticated
+                and request.user.is_admin)
 
 
-class IsAdmin(DoubledPermission):
+class IsModerator(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated
-                    and request.user.role == 'admin')
-
-
-class IsModerator(DoubledPermission):
-    def has_permission(self, request, view):
-        return bool(request.user.is_authenticated
-                    and request.user.role == 'moderator')
+        return (request.user.is_authenticated
+                and request.user.is_moder)
 
 
 class IsAuthor(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated)
+        return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        return bool(obj.author == request.user)
+        return obj.author == request.user
 
 
-class IsSuperuser(DoubledPermission):
+class IsSuperuser(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated
-                    and request.user.is_superuser)
+        return (request.user.is_authenticated
+                and request.user.is_superuser)
 
 
-class IsYourself(DoubledPermission):
+class IsYourself(permissions.BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
 
-        if '/users/me/' in request.build_absolute_uri():
+        if reverse('users-me') in request.build_absolute_uri():
             if request.method in ['GET', 'DELETE']:
                 return True
             elif request.method == 'PATCH':

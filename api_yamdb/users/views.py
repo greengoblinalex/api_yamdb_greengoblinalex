@@ -1,17 +1,17 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, filters
-from rest_framework import viewsets
+from rest_framework import status, filters, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.permissions import IsSuperuser, IsYourself, IsAdmin
-from .serializers import (User, UserSerializer,
-                          SignupSerializer, TokenSerializer)
+from api.serializers import (User, UserSerializer,
+                             SignupSerializer, TokenSerializer)
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -41,10 +41,22 @@ class UserViewset(viewsets.ModelViewSet):
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().update(request, *args, **kwargs)
 
-    def destroy(self, request, *args, **kwargs):
-        if self.kwargs.get('username') == 'me':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().destroy(request, *args, **kwargs)
+    @action(detail=False, methods=['get'], url_path='me')
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+    @me.mapping.patch
+    def me_patch(self, request):
+        serializer = self.get_serializer(
+            request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @me.mapping.delete
+    def me_delete(self, request):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class SignupView(APIView):
