@@ -121,15 +121,8 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'genre',
+        fields = ('id', 'name', 'year', 'genre',
                   'description', 'category')
-
-    def get_rating(self, obj):
-        all_scores = obj.reviews.values_list('score', flat=True)
-
-        if not all_scores:
-            return None
-        return int(sum(all_scores) / len(all_scores))
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -168,13 +161,15 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Score must be between 0 and 10')
         return value
 
-    def save(self, **kwargs):
-        if self.context['request'].method == 'POST' and \
-                Review.objects.filter(author=kwargs['author'],
-                                      title=kwargs['title']).exists():
+    def validate(self, data):
+        if (self.context['request'].method == 'POST'
+                and Review.objects.filter(
+                    author=self.context['author'], title=self.context['title']
+                ).exists()):
             raise ValidationError(
-                'Вы уже оставляли отзыв на это произведение')
-        super().save(**kwargs)
+                'You have already left a review for this title'
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
