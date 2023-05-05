@@ -58,7 +58,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         title_id = self.kwargs['title_id']
         review_id = self.kwargs['review_id']
         return Comment.objects.filter(
-            review__id=review_id, review__title__id=title_id).order_by('id')
+            review__id=review_id, review__title__id=title_id
+        ).order_by('id')
 
     def perform_create(self, serializer):
         title_id = self.kwargs['title_id']
