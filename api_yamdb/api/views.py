@@ -35,6 +35,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             .values('title')
             .annotate(rating=Avg('score'))
             .order_by('title')
+            .values('rating')
         )
 
         for title, average_rating in zip(
