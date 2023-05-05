@@ -124,6 +124,18 @@ class TitleReadSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'genre',
                   'description', 'category')
 
+
+class TitleWriteSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(slug_field='slug',
+                                         queryset=Genre.objects.all(),
+                                         many=True)
+    category = serializers.SlugRelatedField(slug_field='slug',
+                                            queryset=Category.objects.all())
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'genre', 'description', 'category')
+
     def validate_year(self, value):
         current_year = timezone.now().year
         if value > current_year:
