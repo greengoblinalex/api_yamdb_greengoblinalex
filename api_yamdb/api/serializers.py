@@ -1,29 +1,123 @@
-from datetime import date
+import re
 
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import DateTimeField
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Comment, Review, Title, Genre, Category, TitleGenre
+from reviews.models import Comment, Review, Title, Genre, Category, User
+from users.constants import USERNAME_PATTERN
+
+
+class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+
+    def validate_username(self, data):
+        if not re.match(USERNAME_PATTERN, data):
+            raise serializers.ValidationError(
+                'Username should contain only letters,\
+                 digits, and @/./+/-/_ characters.'
+            )
+
+        return data
+
+    def validate_email(self, data):
+        if len(data) > 254:
+            raise serializers.ValidationError('Too long email')
+        return data
+
+
+class SignupSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+    def validate(self, data):
+        user = User.objects.filter(email=data.get('email')).first()
+        if user and user.username != data.get('username'):
+            raise serializers.ValidationError(
+                'Another user with this email already exists')
+
+        user = User.objects.filter(username=data.get('username')).first()
+        if user and user.username == data.get(
+                'username') and user.email != data.get('email'):
+            raise serializers.ValidationError('Wrong email already exists')
+        return data
+
+    def validate_username(self, data):
+        if not re.match(USERNAME_PATTERN, data):
+            raise serializers.ValidationError(
+                'Username should contain only letters,\
+                 digits, and @/./+/-/_ characters.'
+            )
+        elif data == 'me':
+            raise serializers.ValidationError(
+                'Invalid username: "me" is a reserved keyword')
+        elif len(data) > 150:
+            raise serializers.ValidationError('Too long username')
+        return data
+
+    def validate_email(self, data):
+        if len(data) > 254:
+            raise serializers.ValidationError('Too long email')
+        return data
+
+    def validate_first_name(self, data):
+        if len(data) > 150:
+            raise serializers.ValidationError('Too long first name')
+        return data
+
+    def validate_last_name(self, data):
+        if len(data) > 150:
+            raise serializers.ValidationError('Too long last name')
+        return data
+
+
+class TokenSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code', 'email')
+
+    def validate(self, data):
+        username = data.get('username')
+        user = get_object_or_404(
+            User,
+            username=username,
+        )
+        data['user'] = user
+        return data
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SerializerMethodField()
-    genre = serializers.SerializerMethodField()
+class TitleReadSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -31,45 +125,12 @@ class TitleSerializer(serializers.ModelSerializer):
                   'description', 'category')
 
     def validate_year(self, value):
-        current_year = date.today().year
+        current_year = timezone.now().year
         if value > current_year:
-            raise serializers.ValidationError("Год выпуска не может быть "
-                                              "больше текущего года")
+            raise serializers.ValidationError(
+                "Год выпуска не может быть больше текущего года"
+            )
         return value
-
-    def get_genre(self, obj):
-        return GenreSerializer(obj.genre, many=True).data
-
-    def get_category(self, obj):
-        return CategorySerializer(obj.category).data
-
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        category = validated_data.pop('category')
-        category = Category.objects.get(slug=category)
-
-        title = Title.objects.create(**validated_data, category=category)
-        for genre in genres:
-            genre = Genre.objects.get(slug=genre)
-            TitleGenre.objects.create(title=title, genre=genre)
-        return title
-
-    def update(self, title, validated_data):
-        genres = validated_data.pop('genre')
-        category = validated_data.pop('category')
-        category = Category.objects.get(slug=category)
-
-        if category:
-            setattr(title, 'category', category)
-        for (key, value) in validated_data.items():
-            setattr(title, key, value)
-        title.save()
-
-        if genres:
-            for genre in genres:
-                genre = Genre.objects.get(slug=genre)
-                TitleGenre.objects.create(title=title, genre=genre)
-        return title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
