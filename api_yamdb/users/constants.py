@@ -1,7 +1,10 @@
+ADMIN = 'admin'
+MODER = 'moderator'
+USER = 'user'
 ROLES = (
-    ('admin', 'admin'),
-    ('moderator', 'moderator'),
-    ('user', 'user')
+    (ADMIN, 'admin'),
+    (MODER, 'moderator'),
+    (USER, 'user')
 )
 
 USERNAME_PATTERN = r'^[\w.@+-]+$'
