@@ -2,7 +2,7 @@ import csv
 
 from django.core.management import BaseCommand
 
-from reviews.models import (Title, Genre, Category, TitleGenre, User,
+from reviews.models import (Title, Genre, Category, User,
                             Review, Comment)
 
 ALREDY_LOADED_ERROR_MESSAGE = """
@@ -11,10 +11,10 @@ first delete the db.sqlite3 file to destroy the database.
 Then, run `python manage.py migrate` for a new empty
 database with tables"""
 FILES = [
-    'users.csv', 'category.csv', 'genre.csv', 'titles.csv', 'genre_title.csv',
-    'review.csv', 'comments.csv',
+    'users.csv', 'category.csv', 'genre.csv', 'titles.csv', 'review.csv',
+    'comments.csv', 'genre_title.csv',
 ]
-MODELS = [User, Category, Genre, Title, TitleGenre, Review, Comment]
+MODELS = [User, Category, Genre, Title, Review, Comment, Title.genre.through]
 
 
 def import_csv(file, model):

@@ -1,14 +1,15 @@
 import re
 from datetime import date
 
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.relations import SlugRelatedField
 from rest_framework.fields import DateTimeField
+from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Comment, Review, Title, Genre, Category, TitleGenre
+from reviews.models import Comment, Review, Title, Genre, Category
 from users.constants import USERNAME_PATTERN
 
 User = get_user_model()
@@ -108,73 +109,51 @@ class TokenSerializer(serializers.Serializer):
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SerializerMethodField()
-    genre = serializers.SerializerMethodField()
-    rating = serializers.SerializerMethodField('title_rating')
+class TitleReadSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'rating', 'genre',
                   'description', 'category')
 
-    def title_rating(self, obj):
+    def get_rating(self, obj):
         all_scores = obj.reviews.values_list('score', flat=True)
 
         if not all_scores:
             return None
-
         return int(sum(all_scores) / len(all_scores))
 
+
+class TitleWriteSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(slug_field='slug',
+                                         queryset=Genre.objects.all(),
+                                         many=True)
+    category = serializers.SlugRelatedField(slug_field='slug',
+                                            queryset=Category.objects.all())
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'genre', 'description', 'category')
+
     def validate_year(self, value):
-        current_year = date.today().year
+        current_year = timezone.now().year
         if value > current_year:
-            raise serializers.ValidationError("Год выпуска не может быть "
-                                              "больше текущего года")
+            raise serializers.ValidationError(
+                "Год выпуска не может быть больше текущего года"
+            )
         return value
-
-    def get_genre(self, obj):
-        return GenreSerializer(obj.genre, many=True).data
-
-    def get_category(self, obj):
-        return CategorySerializer(obj.category).data
-
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        category = validated_data.pop('category')
-        category = Category.objects.get(slug=category)
-
-        title = Title.objects.create(**validated_data, category=category)
-        for genre in genres:
-            genre = Genre.objects.get(slug=genre)
-            TitleGenre.objects.create(title=title, genre=genre)
-        return title
-
-    def update(self, title, validated_data):
-        genres = validated_data.pop('genre')
-        category = validated_data.pop('category')
-        category = Category.objects.get(slug=category)
-
-        if category:
-            setattr(title, 'category', category)
-        for (key, value) in validated_data.items():
-            setattr(title, key, value)
-        title.save()
-
-        if genres:
-            for genre in genres:
-                genre = Genre.objects.get(slug=genre)
-                TitleGenre.objects.create(title=title, genre=genre)
-        return title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
