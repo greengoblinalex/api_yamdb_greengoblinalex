@@ -1,18 +1,14 @@
 import re
-from datetime import date
 
 from django.utils import timezone
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import DateTimeField
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Comment, Review, Title, Genre, Category
+from reviews.models import Comment, Review, Title, Genre, Category, User
 from users.constants import USERNAME_PATTERN
-
-User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
