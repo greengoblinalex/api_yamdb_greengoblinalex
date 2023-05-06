@@ -1,39 +1,36 @@
-from rest_framework import permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.urls import reverse
 
 
-class ReadOnly(permissions.BasePermission):
+class ReadOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.method in permissions.SAFE_METHODS
+        return request.method in SAFE_METHODS
 
 
-class IsAdmin(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return (request.user.is_authenticated
-                and request.user.is_admin)
-
-
-class IsModerator(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return (request.user.is_authenticated
-                and request.user.is_moder)
-
-
-class IsAuthor(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated
-
+class IsAdmin(BasePermission):
+    def has_permission(self, request, view): 
+        return request.user.is_authenticated and request.user.is_admin
+    
     def has_object_permission(self, request, view, obj):
-        return obj.author == request.user
+        return request.user.is_authenticated and request.user.is_admin
 
 
-class IsSuperuser(permissions.BasePermission):
+class IsModerator(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user.is_authenticated and request.user.is_moder
+
+
+class IsAuthor(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return (request.user.is_authenticated and obj.author == request.user) or request.method in SAFE_METHODS
+
+
+class IsSuperuser(BasePermission):
     def has_permission(self, request, view):
-        return (request.user.is_authenticated
-                and request.user.is_superuser)
+        return request.user.is_authenticated and request.user.is_superuser
 
 
-class IsYourself(permissions.BasePermission):
+class IsYourself(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
