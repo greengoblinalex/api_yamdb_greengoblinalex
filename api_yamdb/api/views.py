@@ -6,7 +6,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from reviews.filters import TitleFilter
 from reviews.models import Title, Genre, Category, Review
@@ -56,7 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
                 titles_serializer_data, average_ratings
         ):
             title['rating']: Optional[int] = (
-                    average_rating['rating'] and int(average_rating['rating'])
+                average_rating['rating'] and int(average_rating['rating'])
             )
 
         return self.get_paginated_response(titles_serializer_data)
@@ -73,7 +72,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             .get(id=title.id)
         )
         title_serializer_data['rating']: Optional[int] = (
-                average_rating['rating'] and int(average_rating['rating'])
+            average_rating['rating'] and int(average_rating['rating'])
         )
 
         return Response(title_serializer_data)
@@ -99,7 +98,7 @@ class CategoryViewSet(CreateListDestroyMixin):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthor | IsAdmin | IsModerator]
+    permission_classes = [IsAdmin | IsModerator | IsAuthor | ReadOnly]
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
@@ -123,7 +122,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthor | IsAdmin | IsModerator]
+    permission_classes = [IsAdmin | IsModerator | IsAuthor | ReadOnly]
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
