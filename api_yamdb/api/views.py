@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from reviews.filters import TitleFilter
 from reviews.models import Title, Genre, Category, Review
-from .permissions import ReadOnly, IsAuthor, IsAdmin, IsModerator
+from .permissions import IsAuthor, IsAdmin, IsModerator, ReadOnly
 from .serializers import (TitleReadSerializer, TitleWriteSerializer,
                           GenreSerializer, CategorySerializer,
                           CommentSerializer, ReviewSerializer, )
@@ -25,7 +25,7 @@ class CreateListDestroyMixin(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('id')
-    permission_classes = [ReadOnly | IsAdmin]
+    permission_classes = [IsAdmin | ReadOnly]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -55,7 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
                 titles_serializer_data, average_ratings
         ):
             title['rating']: Optional[int] = (
-                    average_rating['rating'] and int(average_rating['rating'])
+                average_rating['rating'] and int(average_rating['rating'])
             )
 
         return self.get_paginated_response(titles_serializer_data)
@@ -72,7 +72,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             .get(id=title.id)
         )
         title_serializer_data['rating']: Optional[int] = (
-                average_rating['rating'] and int(average_rating['rating'])
+            average_rating['rating'] and int(average_rating['rating'])
         )
 
         return Response(title_serializer_data)
@@ -81,7 +81,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class GenreViewSet(CreateListDestroyMixin):
     queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
-    permission_classes = [ReadOnly | IsAdmin]
+    permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('slug', 'name')
     lookup_field = 'slug'
@@ -90,7 +90,7 @@ class GenreViewSet(CreateListDestroyMixin):
 class CategoryViewSet(CreateListDestroyMixin):
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
-    permission_classes = [ReadOnly | IsAdmin]
+    permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('slug', 'name')
     lookup_field = 'slug'
@@ -98,7 +98,7 @@ class CategoryViewSet(CreateListDestroyMixin):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [ReadOnly | IsAuthor | IsAdmin | IsModerator]
+    permission_classes = [IsAdmin | IsModerator | IsAuthor | ReadOnly]
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']
@@ -122,7 +122,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [ReadOnly | IsAuthor | IsAdmin | IsModerator]
+    permission_classes = [IsAdmin | IsModerator | IsAuthor | ReadOnly]
 
     def get_queryset(self):
         title_id = self.kwargs['title_id']

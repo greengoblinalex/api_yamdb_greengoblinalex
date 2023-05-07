@@ -17,7 +17,7 @@ from api.serializers import (User, UserSerializer,
 class UserViewset(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsSuperuser | IsYourself | IsAdmin]
+    permission_classes = [IsSuperuser | IsAdmin | IsYourself]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,
                        filters.OrderingFilter)
