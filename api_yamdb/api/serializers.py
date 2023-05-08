@@ -1,7 +1,7 @@
 import re
 
-from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import DateTimeField
@@ -162,9 +162,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if (self.context['request'].method == 'POST'
-                and Review.objects.filter(
-                    author=self.context['author'], title=self.context['title']
-                ).exists()):
+                and Review.objects.filter(author=self.context['author'],
+                                          title=self.context['title']).exists()
+        ):
             raise ValidationError(
                 'You have already left a review for this title'
             )
