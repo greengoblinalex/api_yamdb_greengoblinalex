@@ -71,7 +71,7 @@ class TitleViewSet(viewsets.ModelViewSet):
                 titles_serializer_data, average_ratings
         ):
             title['rating']: Optional[int] = (
-                    average_rating['rating'] and int(average_rating['rating'])
+                average_rating['rating'] and int(average_rating['rating'])
             )
 
         return self.get_paginated_response(titles_serializer_data)
@@ -88,7 +88,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             .get(id=title.id)
         )
         title_serializer_data['rating']: Optional[int] = (
-                average_rating['rating'] and int(average_rating['rating'])
+            average_rating['rating'] and int(average_rating['rating'])
         )
 
         return Response(title_serializer_data)
