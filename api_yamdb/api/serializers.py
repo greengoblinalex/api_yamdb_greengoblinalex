@@ -1,4 +1,4 @@
-from django.utils import timezone
+import re
 
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -8,7 +8,7 @@ from rest_framework.fields import DateTimeField
 from rest_framework.relations import SlugRelatedField
 
 from reviews.models import Comment, Review, Title, Genre, Category, User
-from .utils import validate_username, validate_email
+from users.constants import USERNAME_PATTERN
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,10 +20,18 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
 
     def validate_username(self, data):
-        return validate_username(data)
+        if not re.match(USERNAME_PATTERN, data):
+            raise serializers.ValidationError(
+                'Username should contain only letters,\
+                 digits, and @/./+/-/_ characters.'
+            )
+
+        return data
 
     def validate_email(self, data):
-        return validate_email(data)
+        if len(data) > 254:
+            raise serializers.ValidationError('Too long email')
+        return data
 
 
 class SignupSerializer(serializers.Serializer):
@@ -47,8 +55,12 @@ class SignupSerializer(serializers.Serializer):
         return data
 
     def validate_username(self, data):
-        validate_username(data)
-        if data.lower() == 'me':
+        if not re.match(USERNAME_PATTERN, data):
+            raise serializers.ValidationError(
+                'Username should contain only letters,\
+                 digits, and @/./+/-/_ characters.'
+            )
+        elif data == 'me':
             raise serializers.ValidationError(
                 'Invalid username: "me" is a reserved keyword')
         elif len(data) > 150:
@@ -56,7 +68,9 @@ class SignupSerializer(serializers.Serializer):
         return data
 
     def validate_email(self, data):
-        return validate_email(data)
+        if len(data) > 254:
+            raise serializers.ValidationError('Too long email')
+        return data
 
     def validate_first_name(self, data):
         if len(data) > 150:
