@@ -40,7 +40,8 @@ class CreateListDestroyMixin(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().order_by('id')
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')
+                                      ).all().order_by('id')
     permission_classes = [IsAdmin | ReadOnly]
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
@@ -50,48 +51,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TitleReadSerializer
         return TitleWriteSerializer
-
-    def list(self, request, *args, **kwargs):
-        titles = self.filter_queryset(self.get_queryset())
-
-        titles_page: list[Title] = self.paginate_queryset(titles)
-        serializer = self.get_serializer(titles_page, many=True)
-        titles_serializer_data: dict = serializer.data
-
-        average_ratings: dict = (
-            Review.objects
-            .filter(title__in=titles_page)
-            .values('title')
-            .annotate(rating=Avg('score'))
-            .order_by('title')
-            .values('rating')
-        )
-
-        for title, average_rating in zip(
-                titles_serializer_data, average_ratings
-        ):
-            title['rating']: Optional[int] = (
-                average_rating['rating'] and int(average_rating['rating'])
-            )
-
-        return self.get_paginated_response(titles_serializer_data)
-
-    def retrieve(self, request, *args, **kwargs):
-        title = self.get_object()
-        serializer = self.get_serializer(title)
-        title_serializer_data: dict = serializer.data
-
-        average_rating: dict[str: float] = (
-            Title.objects
-            .annotate(rating=Avg('reviews__score'))
-            .values('rating')
-            .get(id=title.id)
-        )
-        title_serializer_data['rating']: Optional[int] = (
-            average_rating['rating'] and int(average_rating['rating'])
-        )
-
-        return Response(title_serializer_data)
 
 
 class GenreViewSet(CreateListDestroyMixin):
