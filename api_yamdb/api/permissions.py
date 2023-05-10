@@ -39,7 +39,6 @@ class IsYourself(BasePermission):
             if request.method in ['GET', 'DELETE']:
                 return True
             elif request.method == 'PATCH':
-                if 'role' in request.data:
-                    return False
-                return True
+                if 'role' not in request.data:
+                    return True
         return False
