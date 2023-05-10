@@ -41,6 +41,5 @@ class IsYourself(BasePermission):
             elif request.method == 'PATCH':
                 if 'role' in request.data:
                     return False
-                else:
-                    return True
+                return True
         return False

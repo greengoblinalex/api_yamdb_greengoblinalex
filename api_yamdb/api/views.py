@@ -17,26 +17,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Title, Genre, Category, Review
 from .filters import TitleFilter
+from .mixins import CreateListDestroyMixin
 from .permissions import (IsAuthor, IsAdmin, IsModerator, ReadOnly,
                           IsSuperuser, IsYourself)
 from .serializers import (TitleReadSerializer, TitleWriteSerializer,
                           GenreSerializer, CategorySerializer,
                           CommentSerializer, ReviewSerializer, User,
                           UserSerializer, SignupSerializer, TokenSerializer)
-
-
-class CreateListDestroyMixin(mixins.CreateModelMixin, mixins.ListModelMixin,
-                             mixins.DestroyModelMixin,
-                             viewsets.GenericViewSet):
-    """Миксин на создание, удаление и получение списка объектов.
-    С доступом к объекту по полю 'slug'.
-    С фильтрацией по полям 'name' и 'slug'.
-    С уровнем доступа 'Админ или только чтение'."""
-
-    permission_classes = [IsAdmin | ReadOnly]
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('slug', 'name')
-    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
